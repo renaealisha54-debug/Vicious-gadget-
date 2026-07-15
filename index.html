@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Accio IDE - Offline Mobile Compiler</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: #0d1117; color: #c9d1d9; font-family: 'Courier New', monospace; height: 100dvh; display: flex; flex-direction: column; overflow: hidden; }
+        header { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; background: #161b22; border-bottom: 1px solid #30363d; flex-shrink: 0; }
+        .header-title { font-size: 1.1rem; color: #58a6ff; font-weight: 700; }
+        .header-subtitle { font-size: 0.7rem; color: #8b949e; }
+        .offline-status { display: flex; align-items: center; gap: 6px; font-size: 0.75rem; color: #3fb950; }
+        .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #3fb950; animation: pulse 2s infinite; }
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+        #editor-section { flex: 1; display: flex; overflow: hidden; }
+        #code-editor { flex: 1; background: #0d1117; color: #c9d1d9; border: none; outline: none; resize: none; padding: 12px; font-size: 0.85rem; line-height: 1.6; font-family: 'Courier New', monospace; }
+        #terminal-section { height: 140px; background: #161b22; border-top: 1px solid #30363d; display: flex; flex-direction: column; flex-shrink: 0; }
+        .terminal-label { display: flex; justify-content: space-between; padding: 4px 10px; font-size: 0.65rem; color: #8b949e; border-bottom: 1px solid #30363d; }
+        #terminal-output { flex: 1; overflow-y: auto; padding: 6px 10px; font-size: 0.8rem; line-height: 1.5; }
+        #menu-section { background: #161b22; border-top: 1px solid #30363d; padding: 8px; flex-shrink: 0; }
+        .menu-grid { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 6px; }
+        .action-btn { background: #21262d; color: #c9d1d9; border: 1px solid #30363d; border-radius: 6px; padding: 8px 4px; font-size: 0.75rem; cursor: pointer; }
+        .action-btn:active { background: #30363d; }
+        .btn-run { border-color: #3fb950; color: #3fb950; }
+        .btn-build { border-color: #58a6ff; color: #58a6ff; }
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 100; align-items: center; justify-content: center; }
+        .modal-box { background: #161b22; border: 1px solid #30363d; border-radius: 10px; padding: 20px; width: 88%; max-width: 340px; }
+        .modal-box h3 { color: #58a6ff; margin-bottom: 14px; font-size: 0.95rem; }
+        .progress-track { background: #21262d; border-radius: 4px; height: 8px; margin: 10px 0; overflow: hidden; }
+        #build-progress-bar { height: 100%; width: 0%; background: #58a6ff; transition: width 0.3s ease; }
+        #build-step { font-size: 0.75rem; color: #8b949e; min-height: 1.2em; }
+        .modal-close { margin-top: 14px; background: #21262d; color: #c9d1d9; border: 1px solid #30363d; border-radius: 6px; padding: 7px 16px; cursor: pointer; font-size: 0.8rem; }
+        .template-list { list-style: none; }
+        .template-list li { padding: 9px 10px; border-bottom: 1px solid #30363d; cursor: pointer; font-size: 0.82rem; color: #c9d1d9; }
+        .template-list li:last-child { border-bottom: none; }
+        .template-list li:active { background: #21262d; }
+        .storage-info { font-size: 0.8rem; color: #8b949e; margin-bottom: 12px; }
+        .btn-danger { background: #21262d; color: #f85149; border: 1px solid #f85149; border-radius: 6px; padding: 7px 16px; cursor: pointer; font-size: 0.8rem; }
+    </style>
+</head>
+<body>
+    <div id="app-container" style="display:flex;flex-direction:column;height:100dvh;width:100%;">
+        <header>
+            <div class="header-info">
+                <h1 class="header-title">Accio IDE</h1>
+                <div class="header-subtitle">Local Build Engine v3.0</div>
+            </div>
+            <div class="offline-status"><div class="status-dot"></div><span>Local Mode</span></div>
+        </header>
+
+        <div id="editor-section">
+            <textarea id="code-editor" spellcheck="false" placeholder="// Start coding..."></textarea>
+        </div>
+
+        <div id="terminal-section">
+            <div class="terminal-label">
+                <span>CONSOLE OUTPUT</span>
+                <span id="storage-usage">Cache: 0KB</span>
+            </div>
+            <div id="terminal-output">> System initialized.</div>
+        </div>
+
+        <div id="menu-section">
+            <div class="menu-grid">
+                <button class="action-btn btn-run" onclick="handleAction('RUN')">▶ RUN</button>
+                <button class="action-btn" onclick="handleAction('TEMPLATES')">📑 TEMPLATES</button>
+                <button class="action-btn btn-build" onclick="handleAction('BUILD')">🏗 BUILD</button>
+                <button class="action-btn" onclick="handleAction('STORAGE')">🧹 CACHE</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Build Modal -->
+    <div id="build-modal" class="modal-overlay">
+        <div class="modal-box">
+            <h3>Building APK...</h3>
+            <div id="build-step">Initializing...</div>
+            <div class="progress-track"><div id="build-progress-bar"></div></div>
+            <button class="modal-close" onclick="document.getElementById('build-modal').style.display='none'">Close</button>
+        </div>
+    </div>
+
+    <!-- Templates Modal -->
+    <div id="templates-modal" class="modal-overlay">
+        <div class="modal-box">
+            <h3>Templates</h3>
+            <ul class="template-list" id="template-list"></ul>
+            <button class="modal-close" onclick="document.getElementById('templates-modal').style.display='none'">Close</button>
+        </div>
+    </div>
+
+    <!-- Storage Modal -->
+    <div id="storage-modal" class="modal-overlay">
+        <div class="modal-box">
+            <h3>Cache Manager</h3>
+            <div class="storage-info" id="storage-detail">Loading...</div>
+            <button class="btn-danger" onclick="ProjectManager.clearStorage()">Clear All Cache</button>
+            <button class="modal-close" onclick="document.getElementById('storage-modal').style.display='none'">Close</button>
+        </div>
+    </div>
+
+    <script src="js/ProjectManager.js"></script>
+    <script src="js/TerminalEngine.js"></script>
+    <script src="js/CompilerCore.js"></script>
+    <script src="js/AndroidBridge.js"></script>
+    <script src="js/MainController.js"></script>
+</body>
+</html>
