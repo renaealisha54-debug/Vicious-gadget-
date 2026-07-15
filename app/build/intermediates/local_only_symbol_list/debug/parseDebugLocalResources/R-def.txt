@@ -1,4 +1,0 @@
-R_DEF: Internal format may change without notice
-local
-layout overlay_layout
-style Theme.ViciousGadget

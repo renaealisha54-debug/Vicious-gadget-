@@ -1,0 +1,7 @@
+.gradle/
+app/build/
+build/
+local.properties
+*.apk
+web/vicious-vex/.env.local
+web/vicious-vex/node_modules/
