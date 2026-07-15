@@ -1,0 +1,63 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+@layer base {
+  .dark {
+    --background: 240 15% 12%; /* #191923 */
+    --foreground: 210 20% 98%;
+
+    --card: 240 15% 15%;
+    --card-foreground: 210 20% 98%;
+
+    --popover: 240 15% 12%;
+    --popover-foreground: 210 20% 98%;
+
+    --primary: 240 70% 60%; /* #6666E6 */
+    --primary-foreground: 210 20% 98%;
+
+    --secondary: 240 15% 25%;
+    --secondary-foreground: 210 20% 98%;
+
+    --muted: 240 15% 25%;
+    --muted-foreground: 240 5% 64.9%;
+
+    --accent: 210 80% 70%; /* #99E5FF */
+    --accent-foreground: 240 15% 12%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 240 10% 25%;
+    --input: 240 10% 20%;
+    --ring: 240 70% 60%;
+    
+    --radius: 0.5rem;
+
+    /* These are not directly from the prompt but derived for consistency */
+    --chart-1: 240 70% 60%;
+    --chart-2: 210 80% 70%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
+
+    /* Sidebar theme to match the IDE aesthetic */
+    --sidebar-background: 240 15% 10%;
+    --sidebar-foreground: 240 5% 64.9%;
+    --sidebar-primary: 240 70% 60%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 15% 18%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 240 10% 20%;
+    --sidebar-ring: 240 70% 60%;
+  }
+}
